@@ -1,0 +1,231 @@
+/* Movie Search — Step 1: structure & design
+   Dark cinematic theme. Chakra Petch (headings) + Inter (body). Accent #f59e0b.
+   No JavaScript behaviour yet — this file only styles the static structure. */
+
+:root {
+  /* Surfaces */
+  --bg: #09080d; --surface: #131019; --surface-2: #1b1826;
+  --border: rgba(255, 255, 255, 0.08); --border-strong: rgba(255, 255, 255, 0.14);
+  /* Text */
+  --text: #f4f2f7; --text-2: #ece9f2; --text-dim: #a5a2b5; --text-faint: #6b6880;
+  /* Colour roles */
+  --violet: #8f7cd0; --accent: #f59e0b; --accent-2: #fbbf24; --danger: #f4907a;
+  /* Shape */
+  --radius-card: 14px; --radius-pill: 999px;
+  /* Type */
+  --font-head: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Layout */
+  --maxw: 1180px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(1000px 520px at 50% -140px, rgba(124, 58, 237, 0.24), transparent 68%),
+    radial-gradient(680px 420px at 88% 2%, rgba(245, 158, 11, 0.05), transparent 70%),
+    var(--bg);
+}
+img { display: block; max-width: 100%; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-2); }
+[hidden] { display: none !important; }
+
+/* Page shell — sits above the fixed .ambient layer (see below) */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 72px 24px 64px;
+}
+
+/* Ambient background — crossfades to the hovered card's backdrop image,
+   blurred and tinted so it reads as atmosphere, not a sharp photo. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background-image: var(--backdrop, none);
+  background-size: cover;
+  background-position: center;
+  filter: blur(60px) saturate(1.25) brightness(0.5);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1000px 520px at 50% -140px, rgba(124, 58, 237, 0.24), transparent 68%),
+    radial-gradient(680px 420px at 88% 2%, rgba(245, 158, 11, 0.05), transparent 70%),
+    var(--bg);
+  transition: opacity 0.7s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ambient.is-active::before { opacity: 0.9; }
+  .ambient.is-active::after { opacity: 0.55; }
+}
+
+/* Details bar — a few facts about the hovered movie, tucked along the
+   bottom edge so it never covers the grid itself. */
+.spotlight {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 22px 28px 24px;
+  background: linear-gradient(to top, rgba(5, 4, 9, 0.92), rgba(5, 4, 9, 0.65) 70%, transparent);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+  pointer-events: none;
+}
+.spotlight__genres { margin: 0 0 6px; font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); }
+.spotlight__title { margin: 0 0 6px; font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text); }
+.spotlight__overview { margin: 0; max-width: 640px; font-size: 13.5px; line-height: 1.55; color: var(--text-dim); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (hover: hover) and (pointer: fine) {
+  .spotlight.is-active { transform: translateY(0); opacity: 1; }
+}
+
+/* Hero */
+.hero { max-width: 720px; margin: 0 auto; text-align: center; }
+.hero__label { margin: 0 0 18px; font-family: var(--font-head); font-size: 12px; font-weight: 600; letter-spacing: 0.34em; text-transform: uppercase; color: var(--violet); }
+.hero__title { margin: 0 0 16px; font-family: var(--font-head); font-size: clamp(30px, 6vw, 46px); font-weight: 700; line-height: 1.08; letter-spacing: -0.01em; }
+.hero__tagline { max-width: 520px; margin: 0 auto 34px; font-size: 16px; line-height: 1.62; color: var(--text-dim); }
+
+/* Search input — pill shaped, icon on the left */
+.search { position: relative; max-width: 560px; margin: 0 auto; }
+.search__icon { position: absolute; left: 21px; top: 50%; transform: translateY(-50%); display: flex; color: var(--text-faint); pointer-events: none; }
+.search__input { width: 100%; height: 58px; padding: 0 22px 0 52px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 15px; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.search__input::placeholder { color: var(--text-faint); }
+.search__input:focus { border-color: rgba(245, 158, 11, 0.55); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.10); }
+.search__input::-webkit-search-cancel-button { filter: invert(0.55); }
+
+/* Results header */
+.results { max-width: var(--maxw); margin: 56px auto 0; }
+.results__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.results__title { margin: 0; font-family: var(--font-head); font-size: 15px; font-weight: 600; letter-spacing: 0.03em; color: var(--text-2); }
+.results__count { font-size: 13px; color: var(--text-faint); white-space: nowrap; }
+
+/* Movie grid — auto-fill keeps columns responsive without extra media queries */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 22px; }
+
+/* Movie card — poster with overlaid title, meta bar underneath */
+.card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  cursor: default;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.55s ease, opacity 0.55s ease, filter 0.55s ease;
+}
+.card:hover {
+  z-index: 5;
+  transform: translateY(-14px) scale(1.08);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 42px 70px -18px rgba(0, 0, 0, 0.75), 0 14px 30px -10px rgba(245, 158, 11, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.22);
+}
+/* Spotlight: the rest of the grid dims and settles back while one card is hovered. */
+.grid:has(.card:hover) .card:not(:hover) { transform: scale(0.96); opacity: 0.4; filter: saturate(0.6); }
+
+.card__poster { position: relative; overflow: hidden; display: flex; align-items: flex-end; aspect-ratio: 2 / 3; padding: 15px; background-color: var(--surface-2); }
+/* Poster image lives on its own layer (::before) so it can zoom on hover without
+   moving the title. Step 1: a gradient placeholder via --poster. Step 2: set
+   --poster to url("https://image.tmdb.org/...") for the real poster. */
+.card__poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--poster, none);
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1) brightness(1);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), filter 0.55s ease;
+}
+.card:hover .card__poster::before { transform: scale(1.2); filter: saturate(1.15) brightness(1.08); }
+.card__poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5, 4, 9, 0.94) 0%, rgba(5, 4, 9, 0.60) 30%, rgba(5, 4, 9, 0) 60%);
+  transition: opacity 0.55s ease;
+}
+.card:hover .card__poster::after { opacity: 0.76; }
+
+.card__title { position: relative; z-index: 1; margin: 0; font-family: var(--font-head); font-size: 15px; font-weight: 600; line-height: 1.24; color: #fff; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.55); transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+.card:hover .card__title { transform: translateY(-7px); }
+.card__meta { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; font-size: 12.5px; }
+.card__year { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.card__rating { display: inline-flex; align-items: center; gap: 5px; color: var(--text-2); font-weight: 500; }
+.card__star { color: var(--accent); }
+
+/* State blocks — initial prompt / no results / error */
+.state { max-width: 440px; margin: 80px auto 0; text-align: center; }
+.state--plain { max-width: none; margin-top: 0; text-align: left; } /* results + loading reuse the head layout instead */
+.state__icon { display: grid; place-items: center; width: 62px; height: 62px; margin: 0 auto 22px; border: 1px solid var(--border); border-radius: 50%; background: rgba(255, 255, 255, 0.04); color: var(--violet); }
+.state--error .state__icon { color: var(--danger); border-color: rgba(244, 144, 122, 0.24); background: rgba(244, 144, 122, 0.06); }
+.state__title { margin: 0 0 10px; font-family: var(--font-head); font-size: 20px; font-weight: 600; color: var(--text-2); }
+.state__text { margin: 0; font-size: 14px; line-height: 1.62; color: var(--text-dim); }
+.retry { display: inline-flex; align-items: center; gap: 8px; height: 42px; margin-top: 24px; padding: 0 22px; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: var(--radius-pill); background: rgba(245, 158, 11, 0.09); color: var(--accent); font-family: var(--font-head); font-size: 13px; font-weight: 600; letter-spacing: 0.03em; cursor: pointer; transition: background-color 0.15s ease; }
+.retry:hover { background: rgba(245, 158, 11, 0.16); }
+
+/* Loading state — a spinner in the head, and a shimmer that ripples across
+   the grid instead of every card pulsing in lockstep (each card carries its
+   own --i via inline style, staggering the animation-delay below). */
+#state-loading { animation: state-in 0.35s ease; }
+@keyframes state-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.spinner { display: inline-block; width: 12px; height: 12px; margin-right: 7px; vertical-align: -1px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.16); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.skeleton__poster, .skeleton__line {
+  background: linear-gradient(100deg, #16131e 28%, #221e2e 48%, #16131e 68%);
+  background-size: 220% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.skeleton__poster { aspect-ratio: 2 / 3; }
+.skeleton__meta { display: flex; align-items: center; justify-content: space-between; height: 41px; padding: 0 14px; }
+.skeleton__line { height: 9px; border-radius: var(--radius-pill); }
+@keyframes shimmer { to { background-position: -220% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__poster, .skeleton__line, .spinner, #state-loading { animation: none; }
+  .ambient::before, .ambient::after, .spotlight { transition: none; }
+  .search__input, .retry, .card, .card__poster::before, .card__poster::after, .card__title { transition: none; }
+  .card:hover { transform: none; box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35); }
+  .card:hover .card__poster::before, .card:hover .card__title { transform: none; filter: none; }
+  .grid:has(.card:hover) .card:not(:hover) { transform: none; opacity: 1; filter: none; }
+}
+
+/* Footer */
+.footer { max-width: var(--maxw); margin: 72px auto 0; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; line-height: 1.6; color: var(--text-faint); text-align: center; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .page { padding: 54px 18px 56px; }
+  .results { margin-top: 40px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .card__poster { padding: 12px; }
+  .card__title { font-size: 13px; }
+  .card__meta { padding: 9px 11px; font-size: 11.5px; }
+  .search__input { height: 52px; }
+}

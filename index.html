@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Movie Search</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><linearGradient id='g' x1='0' y1='0' x2='24' y2='24'><stop offset='0' stop-color='%231b1030'/><stop offset='1' stop-color='%2309080d'/></linearGradient></defs><rect width='24' height='24' rx='6' fill='url(%23g)'/><path d='M9 6.2L9 17.8L18.2 12Z' fill='%23f59e0b'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Ambient background: crossfades to the hovered card's backdrop image. -->
+  <div class="ambient" id="ambient" aria-hidden="true"></div>
+
+  <!-- Icon sprite: each icon is defined once and reused via <use href="#icon-name"> -->
+  <svg style="display:none" aria-hidden="true">
+    <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></symbol>
+    <symbol id="icon-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7.5" y1="4" x2="7.5" y2="20"></line><line x1="16.5" y1="4" x2="16.5" y2="20"></line><line x1="3" y1="12" x2="21" y2="12"></line></symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27l5.18 3.05-1.37-5.89 4.56-3.95-6.02-.52L12 3.5 9.67 9.96l-6.02.52 4.56 3.95-1.37 5.89z"></path></symbol>
+  </svg>
+
+  <main class="page">
+
+    <section class="hero">
+      <p class="hero__label">The Movie Database</p>
+      <h1 class="hero__title">Find your next watch</h1>
+      <p class="hero__tagline">Type a title to search thousands of movies &mdash; posters, release years and ratings, straight from TMDB.</p>
+      <form class="search" id="search-form" role="search" autocomplete="off">
+        <span class="search__icon" aria-hidden="true"><svg width="19" height="19"><use href="#icon-search"></use></svg></span>
+        <input class="search__input" id="search-input" type="search" name="query" placeholder="Search for a movie&hellip;" aria-label="Search for a movie" />
+      </form>
+    </section>
+
+    <!-- One state block is shown at a time once Step 3 wires up the JS.
+         #state-results is visible now so the grid/card styling can be reviewed;
+         toggle `hidden` on the others to preview them against the mockup. -->
+    <section class="results" aria-live="polite">
+
+      <div class="state" id="state-initial">
+        <div class="state__icon"><svg width="26" height="26"><use href="#icon-film"></use></svg></div>
+        <h2 class="state__title">Search for a movie to begin</h2>
+        <p class="state__text">Start typing in the box above. Try a title like &ldquo;Dune&rdquo;, &ldquo;The Matrix&rdquo; or &ldquo;Parasite&rdquo;.</p>
+      </div>
+
+      <div class="state--plain" id="state-loading" hidden>
+        <div class="results__head"><h2 class="results__title">Search results</h2><span class="results__count"><span class="spinner" aria-hidden="true"></span>Searching&hellip;</span></div>
+        <div class="grid" id="skeleton-grid">
+          <article class="card" aria-hidden="true" style="--i:0"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+          <article class="card" aria-hidden="true" style="--i:1"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+          <article class="card" aria-hidden="true" style="--i:2"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+          <article class="card" aria-hidden="true" style="--i:3"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+          <article class="card" aria-hidden="true" style="--i:4"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+          <article class="card" aria-hidden="true" style="--i:5"><div class="skeleton__poster"></div><div class="skeleton__meta"><span class="skeleton__line" style="width:34px"></span><span class="skeleton__line" style="width:44px"></span></div></article>
+        </div>
+      </div>
+
+      <div class="state" id="state-empty" hidden>
+        <div class="state__icon"><svg width="24" height="24"><use href="#icon-search"></use></svg></div>
+        <h2 class="state__title">No movies found</h2>
+        <p class="state__text">We couldn&rsquo;t find anything for that search. Check the spelling or try a different title.</p>
+      </div>
+
+      <div class="state state--error" id="state-error" hidden>
+        <div class="state__icon"><svg width="26" height="26"><use href="#icon-alert"></use></svg></div>
+        <h2 class="state__title">Something went wrong</h2>
+        <p class="state__text">We couldn&rsquo;t reach TMDB just now. Check your connection and try again.</p>
+        <button class="retry" type="button" id="retry-button"><svg width="14" height="14"><use href="#icon-refresh"></use></svg>Try again</button>
+      </div>
+
+      <div class="state--plain" id="state-results" hidden>
+        <div class="results__head"><h2 class="results__title">Search results</h2><span class="results__count" id="results-count">12 titles</span></div>
+        <!-- Placeholder cards for Step 1 styling only.
+             Step 2 clears this grid and renders cards from the TMDB response. -->
+        <div class="grid" id="results-grid">
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #3b1f5e, #8b2fbf 55%, #1a0f2e);"><h3 class="card__title">Neon Horizon</h3></div>
+            <div class="card__meta"><span class="card__year">2024</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.8</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #0c4a6e, #0891b2 55%, #041e2e);"><h3 class="card__title">The Last Signal</h3></div>
+            <div class="card__meta"><span class="card__year">2023</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.1</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #7f1d1d, #dc2626 52%, #180606);"><h3 class="card__title">Crimson Vault</h3></div>
+            <div class="card__meta"><span class="card__year">2024</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>6.4</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #1e1b4b, #4338ca 55%, #0a0920);"><h3 class="card__title">Paper Cities</h3></div>
+            <div class="card__meta"><span class="card__year">2022</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>8.2</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #78350f, #f59e0b 58%, #1c1206);"><h3 class="card__title">Afterlight</h3></div>
+            <div class="card__meta"><span class="card__year">2025</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.5</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #334155, #64748b 55%, #0f1620);"><h3 class="card__title">Northwind</h3></div>
+            <div class="card__meta"><span class="card__year">2023</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>6.9</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #500724, #be185d 55%, #1a0410);"><h3 class="card__title">Static Bloom</h3></div>
+            <div class="card__meta"><span class="card__year">2021</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.3</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #164e63, #0d9488 55%, #05191c);"><h3 class="card__title">The Quiet Coast</h3></div>
+            <div class="card__meta"><span class="card__year">2024</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>8.0</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #713f12, #ca8a04 55%, #1c1406);"><h3 class="card__title">Dust &amp; Gold</h3></div>
+            <div class="card__meta"><span class="card__year">2022</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>6.6</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #14532d, #16a34a 55%, #05130a);"><h3 class="card__title">Vesper Lane</h3></div>
+            <div class="card__meta"><span class="card__year">2023</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.7</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #1e293b, #38bdf8 55%, #0b1220);"><h3 class="card__title">Hollow Point</h3></div>
+            <div class="card__meta"><span class="card__year">2021</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>6.8</span></div>
+          </article>
+          <article class="card">
+            <div class="card__poster" style="--poster: linear-gradient(160deg, #431407, #f97316 55%, #180701);"><h3 class="card__title">Ember &amp; Ash</h3></div>
+            <div class="card__meta"><span class="card__year">2025</span><span class="card__rating"><svg class="card__star" width="13" height="13"><use href="#icon-star"></use></svg>7.9</span></div>
+          </article>
+        </div>
+      </div>
+
+    </section>
+
+    <footer class="footer">
+      <p>Movie data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDB)</a>. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </footer>
+
+  </main>
+
+  <!-- Details bar: slides up with a few facts about the hovered movie. -->
+  <div class="spotlight" id="spotlight" aria-hidden="true">
+    <p class="spotlight__genres" id="spotlight-genres"></p>
+    <h2 class="spotlight__title" id="spotlight-title"></h2>
+    <p class="spotlight__overview" id="spotlight-overview"></p>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
