@@ -23,16 +23,15 @@ const spotlightGenres = document.getElementById("spotlight-genres");
 const spotlightTitle = document.getElementById("spotlight-title");
 const spotlightOverview = document.getElementById("spotlight-overview");
 
-// Search results only carry numeric genre_ids — fetched once here and
-// mapped to names, rather than guessing them or calling per hover.
+// TMDB search results only give genre numbers (like 28), not names (like "Action").
+// So we download the full list of genres once when the app starts and keep it here.
 const genreMap = new Map();
 fetch(`${API_BASE}/genre/movie/list?api_key=${API_KEY}&language=en-US`)
   .then((res) => res.json())
   .then((data) => data.genres.forEach((g) => genreMap.set(g.id, g.name)))
-  .catch(console.error); // non-critical — search still works without it
-
-// The five containers Step 1 already built and styled — exactly one of
-// these is visible at a time.
+  .catch(console.error); // If this fails, search still works, just without genre names
+  
+// The five states
 const states = {
   initial: document.getElementById("state-initial"),
   loading: document.getElementById("state-loading"),
@@ -47,30 +46,24 @@ function showState(name) {
   }
 }
 
-/**
- * Ask TMDB for movies matching `query` and return its `results` array.
- * Field names below (title, release_date, vote_average, vote_count,
- * poster_path) come straight from a real /search/movie response —
- * inspected with curl before writing this, not guessed.
- */
+// Search TMDB and return up to 12 movies that have posters.
 async function searchMovies(query) {
   const url = `${API_BASE}/search/movie?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(query)}`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`TMDB request failed (${response.status})`);
   const data = await response.json();
-  // Skip movies TMDB has no poster for — this is a poster grid, and an
-  // empty card doesn't serve that — then cap it at 12 for a tidy grid.
+  // Filter to only 12 movies
   return data.results.filter((movie) => movie.poster_path).slice(0, 12);
 }
 
-/** Turn one TMDB movie object into a card's HTML. */
+// Builds the HTML for one movie card.
 function renderCard(movie) {
   const year = movie.release_date ? movie.release_date.slice(0, 4) : "—";
-  // vote_count can be 0 for movies TMDB has no ratings for yet — showing
-  // "0.0" there would read as a real (bad) score, so show "—" instead.
+  // If nobody has rated the movie yet, show "—" instead of "0.0",
+  // so it doesn't look like a badly rated movie.
   const rating = movie.vote_count > 0 ? movie.vote_average.toFixed(1) : "—";
-  // searchMovies() already filters out posterless movies, so poster_path
-  // is always present here.
+  // No need to check for a missing poster here.
+  // searchMovies() already removed movies without one.
   const poster = `url('${IMAGE_BASE}${movie.poster_path}')`;
 
   return `
@@ -86,8 +79,8 @@ function renderCard(movie) {
   `;
 }
 
-// Titles come from TMDB and can contain characters like & or < — escape
-// them before they go into innerHTML.
+// Movie titles can contain symbols like & or < that the browser might read as code.
+// This turns them into safe text before they go onto the page.
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
@@ -98,15 +91,16 @@ function renderResults(movies) {
   resultsGrid.innerHTML = movies.map(renderCard).join("");
   resultsCount.textContent = `${movies.length} title${movies.length === 1 ? "" : "s"}`;
 
-  // Wire up the background/details-bar hover effect. Cards are re-created
-  // on every search, so listeners are (re)attached here rather than once.
+  // When you hover over a card, show that movie's background and details bar.
+  // Every new search creates brand-new cards, so the hover effect has to be
+  // added again each time.
   resultsGrid.querySelectorAll(".card").forEach((card, i) => {
     card.addEventListener("mouseenter", () => showSpotlight(movies[i]));
     card.addEventListener("mouseleave", hideSpotlight);
   });
 }
 
-/** Crossfade the background to `movie`'s backdrop and show a few details. */
+// When you hover a card, fade in that movie's background image and show its details. 
 function showSpotlight(movie) {
   if (movie.backdrop_path) {
     ambient.style.setProperty("--backdrop", `url('${BACKDROP_BASE}${movie.backdrop_path}')`);
@@ -130,7 +124,10 @@ function hideSpotlight() {
 }
 
 let lastQuery = "";
-let requestId = 0; // guards against a slow, stale response overwriting a newer search
+
+// Each search gets a number. If an older search finishes late,
+// we can tell it's out of date and ignore its results.
+let requestId = 0; 
 
 async function runSearch(query) {
   lastQuery = query;
@@ -139,7 +136,9 @@ async function runSearch(query) {
 
   try {
     const movies = await searchMovies(query);
-    if (thisRequest !== requestId) return; // a newer search started since this one fired
+    // The user has searched for something else since this one started,
+    // so these results are old. Ignore them.
+    if (thisRequest !== requestId) return; 
 
     if (movies.length === 0) {
       showState("empty");
@@ -148,21 +147,23 @@ async function runSearch(query) {
     renderResults(movies);
     showState("results");
   } catch (err) {
+    // Same check here: don't show an error for an old search.
     if (thisRequest !== requestId) return;
     console.error(err);
     showState("error");
   }
 }
 
-// --- Live search, debounced so a request only fires once typing pauses.
+// --- Search as you type, but wait until the user pauses before searching.
+// This stops us from sending a request for every single letter.
 let debounceTimer;
 searchInput.addEventListener("input", () => {
   clearTimeout(debounceTimer);
   const query = searchInput.value.trim();
 
   if (!query) {
-    requestId++; // invalidate any in-flight request — its result is now moot
-    showState("initial");
+    // The box is empty now, so ignore any search that's still loading.
+    requestId++; 
     return;
   }
 
@@ -170,11 +171,14 @@ searchInput.addEventListener("input", () => {
 });
 
 searchForm.addEventListener("submit", (event) => {
-  event.preventDefault(); // this is a live-search box, not a submit-driven form
+   // Stop Enter from reloading the page. Results already appear as you type.
+  event.preventDefault(); 
 });
 
+// On the error screen, "Try again" repeats the last search.
 retryButton.addEventListener("click", () => {
   if (lastQuery) runSearch(lastQuery);
 });
 
-showState("initial"); // nothing searched yet
+// Show the starting screen when the page first loads.
+showState("initial"); 
