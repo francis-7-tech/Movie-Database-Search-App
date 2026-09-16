@@ -36,17 +36,17 @@
       </form>
     </section>
 
-    <!-- One state block is shown at a time once Step 3 wires up the JS.
-         #state-results is visible now so the grid/card styling can be reviewed;
-         toggle `hidden` on the others to preview them against the mockup. -->
+    <!-- This contains the 5 Screens -->
     <section class="results" aria-live="polite">
-
+      
+      <!-- Initial State -->
       <div class="state" id="state-initial">
         <div class="state__icon"><svg width="26" height="26"><use href="#icon-film"></use></svg></div>
         <h2 class="state__title">Search for a movie to begin</h2>
         <p class="state__text">Start typing in the box above. Try a title like &ldquo;Dune&rdquo;, &ldquo;The Matrix&rdquo; or &ldquo;Parasite&rdquo;.</p>
       </div>
-
+      
+      <!-- Loading State -->
       <div class="state--plain" id="state-loading" hidden>
         <div class="results__head"><h2 class="results__title">Search results</h2><span class="results__count"><span class="spinner" aria-hidden="true"></span>Searching&hellip;</span></div>
         <div class="grid" id="skeleton-grid">
@@ -59,23 +59,26 @@
         </div>
       </div>
 
+      <!-- Empty State -->
       <div class="state" id="state-empty" hidden>
         <div class="state__icon"><svg width="24" height="24"><use href="#icon-search"></use></svg></div>
         <h2 class="state__title">No movies found</h2>
         <p class="state__text">We couldn&rsquo;t find anything for that search. Check the spelling or try a different title.</p>
       </div>
-
+      
+      <!-- Error State -->
       <div class="state state--error" id="state-error" hidden>
         <div class="state__icon"><svg width="26" height="26"><use href="#icon-alert"></use></svg></div>
         <h2 class="state__title">Something went wrong</h2>
         <p class="state__text">We couldn&rsquo;t reach TMDB just now. Check your connection and try again.</p>
         <button class="retry" type="button" id="retry-button"><svg width="14" height="14"><use href="#icon-refresh"></use></svg>Try again</button>
       </div>
-
+      
+      <!-- Results State -->
       <div class="state--plain" id="state-results" hidden>
         <div class="results__head"><h2 class="results__title">Search results</h2><span class="results__count" id="results-count">12 titles</span></div>
-        <!-- Placeholder cards for Step 1 styling only.
-             Step 2 clears this grid and renders cards from the TMDB response. -->
+
+        <!-- Placeholder cards, Step 2 clears this grid and renders cards from the TMDB response. -->
         <div class="grid" id="results-grid">
           <article class="card">
             <div class="card__poster" style="--poster: linear-gradient(160deg, #3b1f5e, #8b2fbf 55%, #1a0f2e);"><h3 class="card__title">Neon Horizon</h3></div>
