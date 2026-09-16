@@ -1,12 +1,3 @@
-/* Movie Search — app.js
-   Step 2: TMDB API & movie search.
-   Step 3: request states & error handling.
-
-   API_KEY is a TMDB v3 key. It is intentionally visible here — this is a
-   client-side learning project with no backend, so there is nowhere else
-   to put it. See README for what that tradeoff means and how a real
-   production app would avoid it (a server-side proxy). */
-
 const API_KEY = "cf2f001187227d668edabb88db69fe47";
 const API_BASE = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w342"; // poster size, from TMDB's /configuration response
