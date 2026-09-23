@@ -1,0 +1,14 @@
+{
+  "name": "movie-database-search-app",
+  "version": "1.0.0",
+  "description": "A movie search app built with plain HTML, CSS and JavaScript on top of the TMDB API.",
+  "private": true,
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0"
+  }
+}
