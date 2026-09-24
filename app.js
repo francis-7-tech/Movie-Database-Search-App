@@ -1,7 +1,7 @@
 const API_KEY = "cf2f001187227d668edabb88db69fe47";
 const API_BASE = "https://api.themoviedb.org/3";
-const IMAGE_BASE = "https://image.tmdb.org/t/p/w342"; // poster size, from TMDB's /configuration response
-const BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"; // wider still, used for the hover background
+const IMAGE_BASE = "https://image.tmdb.org/t/p/w342"; 
+const BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"; 
 
 const searchForm = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
