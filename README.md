@@ -3,6 +3,8 @@
 A simple movie search app built with plain HTML, CSS, and JavaScript.
 It uses the [TMDB](https://www.themoviedb.org/) API to search for movies and show their poster, release year, and rating.
 
+**Live demo:** https://movie-database-search-app.vercel.app/
+
 This was built as a learning project — the goal was to practice working with a real external API: `fetch`, `async/await`, JSON, and handling the different states a network request can be in.
 
 ## Features
@@ -33,7 +35,9 @@ The three files at the top are the whole app. Everything below them is tooling a
 
 ## How to run it
 
-No install and no build step — just open `index.html` in a browser.
+The quickest way to try it is the [live demo](https://movie-database-search-app.vercel.app/), deployed on Vercel.
+
+To run it locally, there's no install and no build step — just open `index.html` in a browser.
 
 If the posters don't load, your browser may be blocking requests from a file opened directly from disk. In that case, serve the folder with a simple local server instead (e.g. the "Live Server" extension in VS Code) and open it from there. This project pins Live Server to port 5501, so it opens at `http://127.0.0.1:5501`.
 
